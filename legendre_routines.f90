@@ -2,6 +2,8 @@
 !Legendre polynomials through recursive relationships. 
 !Author: Eugenio Thieme, eugen@thieme.it
 
+include 'math_routines.f90'
+
 !This subroutine is for computing the value of the polynomial of degree
 !l+1 from the polynomial of degree l. Order m remains the same 
 subroutine alegendre_increment_l(x, lmax, m, ans)
@@ -48,9 +50,53 @@ subroutine alegendre_increment_m(x, lmax, ans)
       end if
     end do
   end do
-
- 
 end subroutine
+
+
+!Subroutine for computing fully normalized associated Legendre polynomials. 
+!Result will be organized like GRACE level-2 data:
+!first column represents degree l, second order m, and last the value of fully
+!normalized Legendre. Order of rows: first all m=0 (from l=1 to l=lmax), 
+!then all m=1,2,... and so on.
+!For doubts, please refer to GRACE L2-User-Handbook  
+subroutine normalize_alegendre(leg_com, lmax, normalized)
+  use, intrinsic :: iso_fortran_env
+  implicit none
+  integer, parameter :: qp = REAL128
+  integer :: lmax, m, l, i=1
+  integer(kind=8) :: fattoriale !These are the result of factorial
+  real(kind=qp), dimension(lmax+1, lmax+1) :: leg_com 
+  integer :: nrow
+!Can't use allocatable objects inside subroutines unless I provide explicit
+!interface... but I don't know yet what an explicit interface is :(
+!  real(kind=qp), allocatable, dimension(:,:) :: normalized 
+!  real(kind=qp), dimension(ceiling((real(lmax**2 + 4*lmax + 1))/(2))&
+!                 &,ceiling((real(lmax**2 + 4*lmax + 1))/(2))) :: normalized 
+
+  real(kind=qp), dimension(ceiling((real(lmax**2 + 4*lmax + 1))/(2))&
+                 &,3) :: normalized 
+  !Computing # of row of result
+  nrow = ceiling((real(lmax**2 + 4*lmax + 1))/(2)) 
+  !allocate(normalized(nrow,3))
+
+  do m=1,lmax+1
+    do l=1,lmax
+      if((m-1)==0) then
+        normalized(i,1) = l
+        normalized(i,2) = m-1
+        normalized(i,3) = sqrt(real((2*l+1)))*leg_com(l,m)
+        i = i+1
+      else if(m <= l+1) then
+        normalized(i,1) = l
+        normalized(i,2) = m-1
+        normalized(i,3) = sqrt(real((2*(2*l+1)*fattoriale(l-m-1)))/fattoriale(l+m-1))*leg_com(l,m)
+        i = i+1 
+      end if
+    end do
+  end do
+
+end subroutine
+
 
 
 !TO-DO:
