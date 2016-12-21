@@ -79,7 +79,7 @@ subroutine normalize_alegendre(leg_com, lmax, normalized)
   nrow = ceiling((real(lmax**2 + 4*lmax + 1))/(2)) 
   !allocate(normalized(nrow,3))
 
-  do m=1,lmax+1
+  do m=1,(lmax+1),1
     do l=1,lmax
       if((m-1)==0) then
         normalized(i,1) = l
@@ -89,8 +89,8 @@ subroutine normalize_alegendre(leg_com, lmax, normalized)
       else if(m <= l+1) then
         normalized(i,1) = l
         normalized(i,2) = m-1
-        normalized(i,3) = sqrt(real((2*(2*l+1)*fattoriale(l-m-1)))/fattoriale(l+m-1))*leg_com(l,m)
-        i = i+1 
+        normalized(i,3) = sqrt(real(2*(2*l+1)*fattoriale(l-m+1))/fattoriale(l+m-1))*leg_com(l,m)
+        i = i+1
       end if
     end do
   end do
@@ -99,5 +99,3 @@ end subroutine
 
 
 
-!TO-DO:
-!-add row to ans corresponding to degree 0
